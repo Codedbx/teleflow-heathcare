@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source "../**/*.blade.php";
+@source "../**/*.js";
+@source "../**/*.jsx";
+
+@theme {
+    --font-sans:    'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Sora', sans-serif;
+    --font-mono:    'JetBrains Mono', monospace;
+
+    --color-sidebar:        #0F1A2E;
+    --color-sidebar-hover:  #1A2D4A;
+    --color-teal:           #0AB5A0;
+    --color-teal-light:     #E6F9F7;
+    --color-warning:        #F59E0B;
+    --color-danger:         #EF4444;
+    --color-success:        #10B981;
+    --color-border:         #E5E7EB;
+    --color-text-primary:   #111827;
+    --color-text-secondary: #6B7280;
+    --color-text-muted:     #9CA3AF;
+    --color-bg-base:        #F7F8FA;
+    --color-bg-surface:     #FFFFFF;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+
+    --shadow-card:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-focus: 0 0 0 3px rgba(10,181,160,0.25);
+    --shadow-modal: 0 20px 60px rgba(0,0,0,0.18);
+}
+
+/* ─── ALL design-token CSS variables ─────────────────────────────────────────
+   Every inline style across the app uses var(--xyz). These MUST be defined
+   here in :root — @theme values are Tailwind tokens only, not global CSS vars.
+────────────────────────────────────────────────────────────────────────────── */
+:root {
+    /* Backgrounds */
+    --bg-base:        #F7F8FA;
+    --bg-surface:     #FFFFFF;
+
+    /* Sidebar */
+    --bg-sidebar:     #0F1A2E;
+    --sidebar-hover:  #1A2D4A;
+    --sidebar-text:   #8FA3C0;
+    --sidebar-active: #FFFFFF;
+
+    /* Brand */
+    --accent-teal:    #0AB5A0;
+    --accent-light:   #E6F9F7;
+
+    /* Status */
+    --warning:        #F59E0B;
+    --danger:         #EF4444;
+    --success:        #10B981;
+
+    /* Typography */
+    --text-primary:   #111827;
+    --text-secondary: #6B7280;
+    --text-muted:     #9CA3AF;
+
+    /* Layout */
+    --border:         #E5E7EB;
+    --radius-sm:      6px;
+    --radius-md:      10px;
+    --radius-lg:      16px;
+
+    /* Shadows */
+    --shadow-card:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-focus:   0 0 0 3px rgba(10,181,160,0.25);
+    --shadow-modal:   0 20px 60px rgba(0,0,0,0.18);
+}
+
+/* ─── Base ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar            { width: 5px; height: 5px; }
+::-webkit-scrollbar-track      { background: transparent; }
+::-webkit-scrollbar-thumb      { background: #D1D5DB; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover{ background: #9CA3AF; }
+
+/* ─── Sidebar/main transition ───────────────────────────────── */
+.sidebar-transition { transition: width 280ms cubic-bezier(0.4,0,0.2,1); }
+.main-transition    { transition: margin-left 280ms cubic-bezier(0.4,0,0.2,1); }
+
+/* ─── Page content wrapper ──────────────────────────────────── */
+/* Use <div className="page-content"> on any standard page */
+.page-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+/* ─── Inertia progress bar ──────────────────────────────────── */
+#nprogress .bar { background: #0AB5A0 !important; }

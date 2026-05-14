@@ -1,0 +1,97 @@
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: teleflow_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    networks:
+      - teleflow_net
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: teleflow_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - teleflow_net
+    depends_on:
+      - app
+
+  mysql:
+    image: mysql:8.0
+    container_name: teleflow_mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: teleflow
+      MYSQL_USER: teleflow
+      MYSQL_PASSWORD: teleflow
+    volumes:
+      - teleflow_mysql_data:/var/lib/mysql
+    networks:
+      - teleflow_net
+
+  redis:
+    image: redis:alpine
+    container_name: teleflow_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - teleflow_redis_data:/data
+    networks:
+      - teleflow_net
+
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: teleflow_queue
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    command: sh -c "sleep 15 && php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600"
+    networks:
+      - teleflow_net
+    depends_on:
+      - mysql
+      - redis
+
+  node:
+    image: node:20-alpine
+    container_name: teleflow_node
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "5173:5173"
+    networks:
+      - teleflow_net
+
+networks:
+  teleflow_net:
+    driver: bridge
+
+volumes:
+  teleflow_mysql_data:
+  teleflow_redis_data:

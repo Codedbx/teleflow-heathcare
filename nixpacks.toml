@@ -1,0 +1,27 @@
+[phases.setup]
+nixPkgs = [
+  "php83",
+  "php83Extensions.pdo_mysql",
+  "php83Extensions.redis",
+  "php83Extensions.mbstring",
+  "php83Extensions.bcmath",
+  "php83Extensions.gd",
+  "php83Extensions.zip",
+  "php83Extensions.opcache",
+  "php83Extensions.pcntl",
+  "nodejs_20",
+  "nodePackages.npm"
+]
+aptPkgs = ["git", "curl", "unzip"]
+
+[phases.install]
+cmds = [
+  "composer install --no-dev --optimize-autoloader --no-interaction",
+  "npm ci"
+]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "php artisan migrate --force && php artisan optimize && php -S 0.0.0.0:$PORT -t public"
