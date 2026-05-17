@@ -12,6 +12,7 @@ import AppLayout from '@/layouts/AppLayout';
 export default function Index({ stats, todaySchedule, billingAlerts, recentPatients, todayDate }) {
   return (
     <AppLayout title="Dashboard">
+      <div className="p-4 sm:p-6 lg:p-8">
 
       {/* Page header */}
       <div className="mb-7">
@@ -20,7 +21,7 @@ export default function Index({ stats, todaySchedule, billingAlerts, recentPatie
       </div>
 
       {/* ── Stat Row ────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-5 mb-7">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 mb-7">
         <StatCard
           icon={<CalendarDays size={22} />}
           iconColor="text-[#0AB5A0]"
@@ -64,10 +65,10 @@ export default function Index({ stats, todaySchedule, billingAlerts, recentPatie
       </div>
 
       {/* ── Main content: 60/40 split ────────────────────────────────────────── */}
-      <div className="grid grid-cols-5 gap-5 mb-7">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-5 mb-7">
 
         {/* Today's Schedule — 60% (3 of 5 cols) */}
-        <div className="col-span-3 bg-white rounded-[12px] border border-[#E5E7EB] overflow-hidden">
+        <div className="col-span-1 lg:col-span-3 bg-white rounded-[12px] border border-[#E5E7EB] overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">
             <div className="flex items-center gap-2">
@@ -100,7 +101,7 @@ export default function Index({ stats, todaySchedule, billingAlerts, recentPatie
         </div>
 
         {/* Billing Alerts — 40% (2 of 5 cols) */}
-        <div className="col-span-2 bg-white rounded-[12px] border border-[#E5E7EB] overflow-hidden">
+        <div className="col-span-1 lg:col-span-2 bg-white rounded-[12px] border border-[#E5E7EB] overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">
             <div className="flex items-center gap-2">
@@ -151,12 +152,18 @@ export default function Index({ stats, todaySchedule, billingAlerts, recentPatie
           <table className="w-full">
             <thead>
               <tr className="bg-[#F9FAFB]">
-                {['Patient', 'Last Session', 'Next Session', 'Provider', 'Status'].map((col) => (
+                {[
+                  { label: 'Patient', cls: '' },
+                  { label: 'Last Session', cls: 'hidden md:table-cell' },
+                  { label: 'Next Session', cls: 'hidden md:table-cell' },
+                  { label: 'Provider', cls: 'hidden lg:table-cell' },
+                  { label: 'Status', cls: '' },
+                ].map(({ label, cls }) => (
                   <th
-                    key={col}
-                    className="px-5 py-3 text-left text-xs font-semibold text-[#6B7280] uppercase tracking-wide"
+                    key={label}
+                    className={`px-4 lg:px-5 py-3 text-left text-xs font-semibold text-[#6B7280] uppercase tracking-wide ${cls}`}
                   >
-                    {col}
+                    {label}
                   </th>
                 ))}
               </tr>
@@ -178,6 +185,7 @@ export default function Index({ stats, todaySchedule, billingAlerts, recentPatie
         </div>
       </div>
 
+      </div>{/* /responsive padding wrapper */}
     </AppLayout>
   );
 }
@@ -344,7 +352,7 @@ function PatientRow({ patient }) {
   return (
     <tr className="hover:bg-[#F9FAFB] transition-colors" style={{ height: '52px' }}>
       {/* Patient */}
-      <td className="px-5 py-3">
+      <td className="px-4 lg:px-5 py-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-[#0F1A2E] flex items-center justify-center flex-shrink-0">
             <span className="text-[11px] font-bold text-white">{patient.initials}</span>
@@ -359,12 +367,12 @@ function PatientRow({ patient }) {
       </td>
 
       {/* Last session */}
-      <td className="px-5 py-3 text-sm text-[#374151]">
+      <td className="hidden md:table-cell px-4 lg:px-5 py-3 text-sm text-[#374151]">
         {patient.last_session}
       </td>
 
       {/* Next session */}
-      <td className="px-5 py-3 text-sm text-[#374151]">
+      <td className="hidden md:table-cell px-4 lg:px-5 py-3 text-sm text-[#374151]">
         {patient.next_session === '—' ? (
           <span className="text-[#9CA3AF]">—</span>
         ) : (
@@ -373,12 +381,12 @@ function PatientRow({ patient }) {
       </td>
 
       {/* Provider */}
-      <td className="px-5 py-3 text-sm text-[#374151]">
+      <td className="hidden lg:table-cell px-4 lg:px-5 py-3 text-sm text-[#374151]">
         {patient.provider}
       </td>
 
       {/* Status */}
-      <td className="px-5 py-3">
+      <td className="px-4 lg:px-5 py-3">
         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusCfg.color}`}>
           {statusCfg.label}
         </span>

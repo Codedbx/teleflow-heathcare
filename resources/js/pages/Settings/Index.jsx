@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
     Building2, Users, Bell, Zap,
     Copy, Check, Download, Shield,
@@ -102,6 +103,8 @@ function PracticeTab({ practice }) {
 // ─── Tab: Providers ───────────────────────────────────────────────────────────
 
 function ProvidersTab({ providers }) {
+    const isMobile = useIsMobile();
+
     const PROVIDER_TYPE_LABELS = {
         LCSW: 'Licensed Clinical Social Worker',
         LMFT: 'Licensed Marriage & Family Therapist',
@@ -129,59 +132,105 @@ function ProvidersTab({ providers }) {
                     Care Team — {providers.length} members
                 </h3>
             </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr style={{ background: 'var(--bg-base)' }}>
-                        {['Name', 'Role', 'Credential', 'NPI', 'Email'].map(h => (
-                            <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--border)' }}>{h}</th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
+
+            {isMobile ? (
+                /* ── Mobile: stacked cards ── */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {providers.map((p, i) => {
                         const roleColor = ROLE_COLORS[p.role] ?? ROLE_COLORS.clinician;
                         return (
-                            <tr key={p.id} style={{ borderBottom: i < providers.length - 1 ? '1px solid var(--border)' : 'none', height: 52 }}>
-                                <td style={{ padding: '0 16px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                        <div style={{
-                                            width: 32, height: 32, borderRadius: '50%',
-                                            background: 'var(--accent-teal)', color: '#fff',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontSize: 12, fontWeight: 600, flexShrink: 0,
-                                        }}>
-                                            {p.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
-                                        </div>
-                                        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{p.name}</span>
+                            <div key={p.id} style={{ padding: '14px 16px', borderBottom: i < providers.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                                    <div style={{
+                                        width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                                        background: 'var(--accent-teal)', color: '#fff',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: 13, fontWeight: 600,
+                                    }}>
+                                        {p.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
                                     </div>
-                                </td>
-                                <td style={{ padding: '0 16px' }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.email}</div>
+                                    </div>
                                     <span style={{
                                         display: 'inline-flex', alignItems: 'center',
-                                        padding: '3px 8px', borderRadius: 99,
+                                        padding: '3px 8px', borderRadius: 99, flexShrink: 0,
                                         fontSize: 11, fontWeight: 600,
                                         background: roleColor.bg, color: roleColor.text,
                                         textTransform: 'capitalize',
                                     }}>{p.role}</span>
-                                </td>
-                                <td style={{ padding: '0 16px', fontSize: 13, color: 'var(--text-secondary)' }}>
-                                    {p.provider_type ? (
-                                        <span title={PROVIDER_TYPE_LABELS[p.provider_type]}>{p.provider_type}</span>
-                                    ) : '—'}
-                                </td>
-                                <td style={{ padding: '0 16px' }}>
-                                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'var(--text-secondary)' }}>
-                                        {p.npi_number || '—'}
-                                    </span>
-                                </td>
-                                <td style={{ padding: '0 16px', fontSize: 13, color: 'var(--text-secondary)' }}>
-                                    {p.email}
-                                </td>
-                            </tr>
+                                </div>
+                                <div style={{ display: 'flex', gap: 16, paddingLeft: 46 }}>
+                                    <div>
+                                        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 }}>Credential</div>
+                                        <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{p.provider_type || '—'}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 }}>NPI</div>
+                                        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'var(--text-secondary)' }}>{p.npi_number || '—'}</div>
+                                    </div>
+                                </div>
+                            </div>
                         );
                     })}
-                </tbody>
-            </table>
+                </div>
+            ) : (
+                /* ── Desktop: table ── */
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ background: 'var(--bg-base)' }}>
+                            {['Name', 'Role', 'Credential', 'NPI', 'Email'].map(h => (
+                                <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--border)' }}>{h}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {providers.map((p, i) => {
+                            const roleColor = ROLE_COLORS[p.role] ?? ROLE_COLORS.clinician;
+                            return (
+                                <tr key={p.id} style={{ borderBottom: i < providers.length - 1 ? '1px solid var(--border)' : 'none', height: 52 }}>
+                                    <td style={{ padding: '0 16px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                            <div style={{
+                                                width: 32, height: 32, borderRadius: '50%',
+                                                background: 'var(--accent-teal)', color: '#fff',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: 12, fontWeight: 600, flexShrink: 0,
+                                            }}>
+                                                {p.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
+                                            </div>
+                                            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{p.name}</span>
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: '0 16px' }}>
+                                        <span style={{
+                                            display: 'inline-flex', alignItems: 'center',
+                                            padding: '3px 8px', borderRadius: 99,
+                                            fontSize: 11, fontWeight: 600,
+                                            background: roleColor.bg, color: roleColor.text,
+                                            textTransform: 'capitalize',
+                                        }}>{p.role}</span>
+                                    </td>
+                                    <td style={{ padding: '0 16px', fontSize: 13, color: 'var(--text-secondary)' }}>
+                                        {p.provider_type ? (
+                                            <span title={PROVIDER_TYPE_LABELS[p.provider_type]}>{p.provider_type}</span>
+                                        ) : '—'}
+                                    </td>
+                                    <td style={{ padding: '0 16px' }}>
+                                        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'var(--text-secondary)' }}>
+                                            {p.npi_number || '—'}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '0 16px', fontSize: 13, color: 'var(--text-secondary)' }}>
+                                        {p.email}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            )}
         </div>
     );
 }
@@ -395,15 +444,16 @@ const TABS = [
 
 export default function SettingsIndex({ practice, providers, webhook_url }) {
     const [activeTab, setActiveTab] = useState('practice');
+    const isMobile = useIsMobile();
 
     return (
         <AppLayout>
             <Head title="Settings" />
 
-            <div style={{ width: '100%' }}>
+            <div style={{ padding: isMobile ? '16px 16px 32px' : '32px 32px 48px' }}>
                 {/* Page header */}
                 <div style={{ marginBottom: 28 }}>
-                    <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Sora, sans-serif', margin: '0 0 4px' }}>
+                    <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Sora, sans-serif', margin: '0 0 4px' }}>
                         Settings
                     </h1>
                     <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>
@@ -411,17 +461,15 @@ export default function SettingsIndex({ practice, providers, webhook_url }) {
                     </p>
                 </div>
 
-                <div style={{ display: 'flex', gap: 28, alignItems: 'flex-start' }}>
-                    {/* Left tab nav */}
+                {/* Mobile: horizontal scrollable tab strip */}
+                {isMobile && (
                     <div style={{
-                        width: 200, flexShrink: 0,
-                        background: 'var(--bg-surface)',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--border)',
-                        boxShadow: 'var(--shadow-card)',
-                        overflow: 'hidden',
+                        display: 'flex', overflowX: 'auto', gap: 4, marginBottom: 20,
+                        background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)',
+                        padding: 4, WebkitOverflowScrolling: 'touch',
                     }}>
-                        {TABS.map((tab, i) => {
+                        {TABS.map((tab) => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
                             return (
@@ -429,26 +477,62 @@ export default function SettingsIndex({ practice, providers, webhook_url }) {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     style={{
-                                        width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                                        padding: '13px 16px', textAlign: 'left',
-                                        background: isActive ? 'var(--accent-light)' : 'transparent',
-                                        borderLeft: isActive ? '3px solid var(--accent-teal)' : '3px solid transparent',
-                                        border: 'none',
-                                        borderBottom: i < TABS.length - 1 ? '1px solid var(--border)' : 'none',
-                                        cursor: 'pointer',
-                                        color: isActive ? 'var(--accent-teal)' : 'var(--text-secondary)',
-                                        fontSize: 14, fontWeight: isActive ? 600 : 400,
+                                        display: 'flex', alignItems: 'center', gap: 6,
+                                        padding: '8px 14px', borderRadius: 6, border: 'none',
+                                        background: isActive ? 'var(--accent-teal)' : 'transparent',
+                                        color: isActive ? '#fff' : 'var(--text-secondary)',
+                                        fontSize: 13, fontWeight: isActive ? 600 : 400,
+                                        cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
                                     }}
                                 >
-                                    <Icon size={16} />
+                                    <Icon size={14} />
                                     {tab.label}
                                 </button>
                             );
                         })}
                     </div>
+                )}
 
-                    {/* Tab content — min-height keeps layout stable across tabs */}
-                    <div style={{ flex: 1, minWidth: 0, minHeight: 640 }}>
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 28, alignItems: isMobile ? 'stretch' : 'flex-start' }}>
+                    {/* Left tab nav — desktop only */}
+                    {!isMobile && (
+                        <div style={{
+                            width: 200, flexShrink: 0,
+                            background: 'var(--bg-surface)',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid var(--border)',
+                            boxShadow: 'var(--shadow-card)',
+                            overflow: 'hidden',
+                        }}>
+                            {TABS.map((tab, i) => {
+                                const Icon = tab.icon;
+                                const isActive = activeTab === tab.id;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        style={{
+                                            width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                                            padding: '13px 16px', textAlign: 'left',
+                                            background: isActive ? 'var(--accent-light)' : 'transparent',
+                                            borderLeft: isActive ? '3px solid var(--accent-teal)' : '3px solid transparent',
+                                            border: 'none',
+                                            borderBottom: i < TABS.length - 1 ? '1px solid var(--border)' : 'none',
+                                            cursor: 'pointer',
+                                            color: isActive ? 'var(--accent-teal)' : 'var(--text-secondary)',
+                                            fontSize: 14, fontWeight: isActive ? 600 : 400,
+                                        }}
+                                    >
+                                        <Icon size={16} />
+                                        {tab.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Tab content */}
+                    <div style={{ flex: 1, minWidth: 0, minHeight: isMobile ? 0 : 640 }}>
                         {activeTab === 'practice'      && <PracticeTab practice={practice} />}
                         {activeTab === 'providers'     && <ProvidersTab providers={providers} />}
                         {activeTab === 'notifications' && <NotificationsTab />}

@@ -184,6 +184,7 @@ export default function Assistant({ patients, currentUser, preselected }) {
 
   return (
     <AppLayout title="AI Note Assistant">
+      <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -198,7 +199,7 @@ export default function Assistant({ patients, currentUser, preselected }) {
       </div>
 
       {/* Two-column layout */}
-      <div className="grid grid-cols-2 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
         {/* ── LEFT: Input Panel ──────────────────────────────────────────── */}
         <div className="space-y-4">
@@ -535,6 +536,7 @@ export default function Assistant({ patients, currentUser, preselected }) {
             </div>
           )}
         </div>
+      </div>
       </div>
     </AppLayout>
   );

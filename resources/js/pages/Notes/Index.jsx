@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
 import { FileText, Sparkles, Video, Headphones, Building2, ChevronRight } from 'lucide-react';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -25,15 +26,18 @@ function formatDate(dateStr) {
 export default function NotesIndex({ notes }) {
     const noteList = notes?.data ?? [];
     const meta     = notes?.meta ?? {};
+    const isMobile = useIsMobile();
 
     return (
         <AppLayout>
             <Head title="Clinical Notes" />
 
+            <div style={{ padding: isMobile ? '16px 16px 32px' : '32px 32px 48px' }}>
+
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
                 <div>
-                    <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Sora, sans-serif', margin: '0 0 4px' }}>
+                    <h1 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Sora, sans-serif', margin: '0 0 4px' }}>
                         Clinical Notes
                     </h1>
                     <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>
@@ -47,7 +51,7 @@ export default function NotesIndex({ notes }) {
                         height: 40, padding: '0 20px',
                         background: 'var(--accent-teal)', color: '#fff',
                         borderRadius: 'var(--radius-sm)', textDecoration: 'none',
-                        fontSize: 14, fontWeight: 600,
+                        fontSize: 14, fontWeight: 600, flexShrink: 0,
                     }}
                 >
                     <Sparkles size={15} />
@@ -90,37 +94,51 @@ export default function NotesIndex({ notes }) {
                                 borderRadius: 'var(--radius-md)',
                                 border: '1px solid var(--border)',
                                 boxShadow: 'var(--shadow-card)',
-                                padding: '18px 24px',
+                                padding: isMobile ? '14px 16px' : '18px 24px',
                                 display: 'flex',
-                                alignItems: 'center',
-                                gap: 20,
+                                flexDirection: isMobile ? 'column' : 'row',
+                                alignItems: isMobile ? 'flex-start' : 'center',
+                                gap: isMobile ? 10 : 20,
                             }}
                         >
-                            {/* Date */}
-                            <div style={{ width: 90, flexShrink: 0 }}>
-                                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                                    {formatDate(note.session_date)}
-                                </p>
-                                <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
-                                    {note.duration_minutes} min
-                                </p>
-                            </div>
+                            {/* Date + Patient row on mobile */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
+                                <div style={{ flexShrink: 0 }}>
+                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                                        {formatDate(note.session_date)}
+                                    </p>
+                                    <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+                                        {note.duration_minutes} min
+                                    </p>
+                                </div>
 
-                            {/* Divider */}
-                            <div style={{ width: 1, height: 36, background: 'var(--border)', flexShrink: 0 }} />
+                                {!isMobile && <div style={{ width: 1, height: 36, background: 'var(--border)', flexShrink: 0 }} />}
 
-                            {/* Patient */}
-                            <div style={{ width: 160, flexShrink: 0 }}>
-                                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                                    {note.patient?.first_name} {note.patient?.last_name}
-                                </p>
-                                <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
-                                    {note.provider?.name}
-                                </p>
+                                <div style={{ flexShrink: 0 }}>
+                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                                        {note.patient?.first_name} {note.patient?.last_name}
+                                    </p>
+                                    <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+                                        {note.provider?.name}
+                                    </p>
+                                </div>
+
+                                {isMobile && (
+                                    <Link
+                                        href={`/notes/${note.id}`}
+                                        style={{
+                                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                                            fontSize: 13, color: 'var(--accent-teal)', fontWeight: 500,
+                                            textDecoration: 'none', marginLeft: 'auto', flexShrink: 0,
+                                        }}
+                                    >
+                                        View <ChevronRight size={14} />
+                                    </Link>
+                                )}
                             </div>
 
                             {/* CPT + Modality */}
-                            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                            <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
                                 {note.cpt_code && (
                                     <span style={{
                                         fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
@@ -155,22 +173,28 @@ export default function NotesIndex({ notes }) {
                             {/* Note preview */}
                             <p style={{
                                 flex: 1, margin: 0, fontSize: 13, color: 'var(--text-secondary)',
-                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                overflow: 'hidden', textOverflow: 'ellipsis',
+                                whiteSpace: isMobile ? 'normal' : 'nowrap',
+                                display: isMobile ? '-webkit-box' : undefined,
+                                WebkitLineClamp: isMobile ? 2 : undefined,
+                                WebkitBoxOrient: isMobile ? 'vertical' : undefined,
                             }}>
                                 {note.subjective_preview ?? 'No preview available'}
                             </p>
 
-                            {/* Action */}
-                            <Link
-                                href={`/notes/${note.id}`}
-                                style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                                    fontSize: 13, color: 'var(--accent-teal)', fontWeight: 500,
-                                    textDecoration: 'none', flexShrink: 0,
-                                }}
-                            >
-                                View Note <ChevronRight size={14} />
-                            </Link>
+                            {/* Action — desktop only (mobile shows in top row) */}
+                            {!isMobile && (
+                                <Link
+                                    href={`/notes/${note.id}`}
+                                    style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                                        fontSize: 13, color: 'var(--accent-teal)', fontWeight: 500,
+                                        textDecoration: 'none', flexShrink: 0,
+                                    }}
+                                >
+                                    View Note <ChevronRight size={14} />
+                                </Link>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -208,6 +232,8 @@ export default function NotesIndex({ notes }) {
                     ))}
                 </div>
             )}
+
+            </div>
         </AppLayout>
     );
 }

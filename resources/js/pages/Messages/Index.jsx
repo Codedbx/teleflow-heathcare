@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
     Search, Send, Plus, X, MessageSquare,
-    Paperclip, User, ChevronRight,
+    Paperclip, User, ChevronRight, ArrowLeft,
 } from 'lucide-react';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -188,6 +189,9 @@ export default function MessagesIndex({ threads, patients, active_patient, activ
     const [sending, setSending]       = useState(false);
     const [body, setBody]             = useState('');
     const messagesEndRef              = useRef(null);
+    const isMobile                    = useIsMobile();
+    // On mobile: show 'list' or 'thread' panel
+    const [mobilePanel, setMobilePanel] = useState(active_patient ? 'thread' : 'list');
 
     useEffect(() => {
         setMessages(active_messages ?? []);
@@ -202,6 +206,7 @@ export default function MessagesIndex({ threads, patients, active_patient, activ
     );
 
     function openThread(patientId) {
+        if (isMobile) setMobilePanel('thread');
         router.get(`/messages/${patientId}`, {}, { preserveScroll: false });
     }
 
@@ -230,16 +235,18 @@ export default function MessagesIndex({ threads, patients, active_patient, activ
             <Head title="Messages" />
 
             <div style={{
-                display: 'flex', height: '100vh',
+                display: 'flex', height: isMobile ? 'calc(100vh - 56px)' : '100vh',
                 background: 'var(--bg-base)', overflow: 'hidden',
             }}>
 
                 {/* ── Thread List (left) ────────────────────────────────── */}
                 <div style={{
-                    width: 300, flexShrink: 0,
+                    width: isMobile ? '100%' : 300,
+                    flexShrink: 0,
                     background: 'var(--bg-surface)',
                     borderRight: '1px solid var(--border)',
-                    display: 'flex', flexDirection: 'column',
+                    display: isMobile && mobilePanel === 'thread' ? 'none' : 'flex',
+                    flexDirection: 'column',
                 }}>
                     {/* Header */}
                     <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid var(--border)' }}>
@@ -331,7 +338,10 @@ export default function MessagesIndex({ threads, patients, active_patient, activ
                 </div>
 
                 {/* ── Message View (right) ─────────────────────────────── */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{
+                    flex: 1, display: isMobile && mobilePanel === 'list' ? 'none' : 'flex',
+                    flexDirection: 'column', overflow: 'hidden',
+                }}>
                     {!active_patient ? (
                         /* Empty state */
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
@@ -365,12 +375,25 @@ export default function MessagesIndex({ threads, patients, active_patient, activ
                         <>
                             {/* Thread header */}
                             <div style={{
-                                padding: '16px 24px',
+                                padding: isMobile ? '12px 16px' : '16px 24px',
                                 background: 'var(--bg-surface)',
                                 borderBottom: '1px solid var(--border)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                {isMobile && (
+                                    <button
+                                        onClick={() => setMobilePanel('list')}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            width: 32, height: 32, border: 'none',
+                                            background: 'var(--bg-base)', borderRadius: 8,
+                                            cursor: 'pointer', color: 'var(--text-secondary)', flexShrink: 0,
+                                        }}
+                                    >
+                                        <ArrowLeft size={18} />
+                                    </button>
+                                )}
                                     <div style={{
                                         width: 40, height: 40, borderRadius: '50%',
                                         background: 'var(--accent-teal)', color: '#fff',

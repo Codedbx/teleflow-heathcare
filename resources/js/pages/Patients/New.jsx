@@ -378,7 +378,7 @@ function WizardShell({ children, isPublic, practiceName }) {
           <p className="text-sm text-[#6B7280]">Secure Patient Intake Form</p>
         </div>
 
-        <div className="w-full max-w-[640px] bg-white rounded-[16px] border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] p-8">
+        <div className="w-full max-w-[640px] bg-white rounded-[16px] border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] p-5 sm:p-8">
           {children}
         </div>
 
@@ -407,7 +407,7 @@ function WizardShell({ children, isPublic, practiceName }) {
         </button>
       </div>
 
-      <div className="w-full max-w-[640px] bg-white rounded-[16px] border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] p-8">
+      <div className="w-full max-w-[640px] bg-white rounded-[16px] border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] p-5 sm:p-8">
         {children}
       </div>
     </div>

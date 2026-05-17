@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import AppLayout from '@/layouts/AppLayout';
 import SoapNoteDisplay from '@/components/SoapNoteDisplay';
 import {
@@ -69,8 +70,9 @@ function ModalityIcon({ modality }) {
 
 function OverviewTab({ patient }) {
     const ins = patient.insurance;
+    const isMobile = useIsMobile();
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 20 }}>
             {/* Insurance */}
             <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 20 }}>
                 <h3 style={{ margin: '0 0 16px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Insurance</h3>
@@ -226,8 +228,8 @@ function BillingTab({ patient }) {
             {claims.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontSize: 13 }}>No billing claims</div>
             ) : (
-                <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 520 }}>
                         <thead>
                             <tr style={{ background: 'var(--bg-base)' }}>
                                 {['Date', 'CPT', 'Modifier', 'Payer', 'Amount', 'Validation', 'Status'].map(h => (
@@ -324,45 +326,52 @@ const TABS = [
 export default function PatientShow({ patient, currentUser }) {
     const [activeTab, setActiveTab] = useState('overview');
     const status = STATUS_STYLES[patient.status] ?? STATUS_STYLES.active;
+    const isMobile = useIsMobile();
 
     return (
         <AppLayout>
             <Head title={`${patient.first_name} ${patient.last_name}`} />
 
+            <div style={{ padding: isMobile ? '16px 16px 32px' : '32px 32px 48px' }}>
+
             {/* Breadcrumb */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, fontSize: 13, color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, fontSize: 13, color: 'var(--text-muted)', flexWrap: 'wrap' }}>
                 <Link href="/patients" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Patients</Link>
                 <ChevronRight size={13} />
                 <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{patient.first_name} {patient.last_name}</span>
             </div>
 
-            <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 24, alignItems: 'flex-start' }}>
 
                 {/* ── Left sidebar card ───────────────────────────────────── */}
                 <div style={{
-                    width: 240, flexShrink: 0,
+                    width: isMobile ? '100%' : 240, flexShrink: 0,
                     background: 'var(--bg-surface)', border: '1px solid var(--border)',
                     borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-card)',
-                    padding: 24, position: 'sticky', top: 24,
+                    padding: isMobile ? '16px' : 24,
+                    position: isMobile ? 'static' : 'sticky', top: 24,
                 }}>
                     {/* Avatar */}
-                    <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                    <div style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', alignItems: isMobile ? 'center' : 'center', gap: isMobile ? 12 : 0, textAlign: isMobile ? 'left' : 'center', marginBottom: 20 }}>
                         <div style={{
-                            width: 64, height: 64, borderRadius: '50%',
+                            width: isMobile ? 48 : 64, height: isMobile ? 48 : 64, borderRadius: '50%',
                             background: 'var(--accent-teal)', color: '#fff',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 22, fontWeight: 700, margin: '0 auto 12px',
-                            fontFamily: 'Sora, sans-serif',
+                            fontSize: isMobile ? 16 : 22, fontWeight: 700,
+                            margin: isMobile ? '0' : '0 auto 12px',
+                            fontFamily: 'Sora, sans-serif', flexShrink: 0,
                         }}>
                             {initials(patient.first_name, patient.last_name)}
                         </div>
-                        <h2 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Sora, sans-serif' }}>
-                            {patient.first_name} {patient.last_name}
-                        </h2>
-                        <p style={{ margin: '0 0 8px', fontSize: 13, color: 'var(--text-muted)' }}>
-                            DOB: {formatDate(patient.dob)} · Age {age(patient.dob)}
-                        </p>
-                        <Badge label={status.label} bg={status.bg} color={status.color} />
+                        <div>
+                            <h2 style={{ margin: '0 0 2px', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Sora, sans-serif' }}>
+                                {patient.first_name} {patient.last_name}
+                            </h2>
+                            <p style={{ margin: '0 0 6px', fontSize: 13, color: 'var(--text-muted)' }}>
+                                DOB: {formatDate(patient.dob)} · Age {age(patient.dob)}
+                            </p>
+                            <Badge label={status.label} bg={status.bg} color={status.color} />
+                        </div>
                     </div>
 
                     {/* Contact */}
@@ -385,7 +394,7 @@ export default function PatientShow({ patient, currentUser }) {
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: 8 }}>
                         <Link
                             href={`/messages/${patient.id}`}
                             style={{
@@ -419,6 +428,8 @@ export default function PatientShow({ patient, currentUser }) {
                         display: 'flex', gap: 0, marginBottom: 20,
                         background: 'var(--bg-surface)', border: '1px solid var(--border)',
                         borderRadius: 'var(--radius-md)', padding: 4,
+                        overflowX: isMobile ? 'auto' : 'visible',
+                        WebkitOverflowScrolling: 'touch',
                     }}>
                         {TABS.map(tab => {
                             const Icon = tab.icon;
@@ -428,11 +439,14 @@ export default function PatientShow({ patient, currentUser }) {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     style={{
-                                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                        flex: isMobile ? '0 0 auto' : 1,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
                                         height: 34, borderRadius: 6, border: 'none',
+                                        padding: isMobile ? '0 12px' : '0',
                                         background: active ? 'var(--accent-teal)' : 'transparent',
                                         color: active ? '#fff' : 'var(--text-secondary)',
-                                        fontSize: 13, fontWeight: active ? 600 : 400, cursor: 'pointer',
+                                        fontSize: isMobile ? 12 : 13, fontWeight: active ? 600 : 400,
+                                        cursor: 'pointer', whiteSpace: 'nowrap',
                                     }}
                                 >
                                     <Icon size={13} />
@@ -449,6 +463,8 @@ export default function PatientShow({ patient, currentUser }) {
                     {activeTab === 'billing'      && <BillingTab patient={patient} />}
                     {activeTab === 'messages'     && <MessagesTab patient={patient} />}
                 </div>
+            </div>
+
             </div>
         </AppLayout>
     );

@@ -19,7 +19,7 @@ export default function Step1Personal({ data, onChange, errors }) {
       </div>
 
       {/* Name row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="First Name" error={errors?.first_name} icon={<User size={15} />}>
           <input
             type="text"
@@ -41,7 +41,7 @@ export default function Step1Personal({ data, onChange, errors }) {
       </div>
 
       {/* DOB + Gender */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Date of Birth" error={errors?.dob} icon={<Calendar size={15} />}>
           <input
             type="date"
@@ -66,7 +66,7 @@ export default function Step1Personal({ data, onChange, errors }) {
       </div>
 
       {/* Phone + Email */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Phone Number" error={errors?.phone} icon={<Phone size={15} />}>
           <input
             type="tel"
@@ -99,8 +99,8 @@ export default function Step1Personal({ data, onChange, errors }) {
       </Field>
 
       {/* City / State / Zip */}
-      <div className="grid grid-cols-5 gap-4">
-        <div className="col-span-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+        <div className="col-span-2 sm:col-span-3">
           <Field label="City" error={errors?.city}>
             <input
               type="text"

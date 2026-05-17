@@ -85,7 +85,7 @@ export default function Step3Clinical({ data, onChange, errors }) {
           <Video size={15} className="text-[#0AB5A0]" />
           Session Modality Preference
         </label>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {MODALITIES.map((m) => (
             <button
               key={m.value}

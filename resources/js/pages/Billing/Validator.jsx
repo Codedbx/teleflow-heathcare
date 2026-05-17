@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
     ShieldCheck, AlertTriangle, CheckCircle, XCircle,
     ChevronDown, RefreshCw, Save, Send,
@@ -190,10 +191,11 @@ export default function Validator({ patients = [], providers = [], prefill = nul
     // ─── Render ──────────────────────────────────────────────────────────────
 
     const patientOptions = patients.map(p => ({ value: String(p.id), label: p.name }));
+    const isMobile = useIsMobile();
 
     return (
         <AppLayout title="Billing Validator">
-            <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 0 48px' }}>
+            <div style={{ maxWidth: '800px', margin: '0 auto', padding: isMobile ? '16px 16px 48px' : '32px 32px 48px' }}>
 
                 {/* Page header */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
@@ -458,7 +460,8 @@ export default function Validator({ patients = [], providers = [], prefill = nul
                             }}>
                                 Detailed Check Results
                             </div>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 480 }}>
                                 <thead>
                                     <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-base)' }}>
                                         {['Check', 'Status', 'Detail', 'Suggested Fix'].map(h => (
@@ -483,6 +486,7 @@ export default function Validator({ patients = [], providers = [], prefill = nul
                                     ))}
                                 </tbody>
                             </table>
+                            </div>
                         </div>
 
                         {/* Action bar */}
@@ -621,10 +625,11 @@ function SectionLabel({ children }) {
 }
 
 function FormRow({ cols = 2, children }) {
+    const isMobile = useIsMobile();
     return (
         <div style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${cols}, 1fr)`,
+            gridTemplateColumns: isMobile ? '1fr' : `repeat(${cols}, 1fr)`,
             gap: '16px',
             marginBottom: '16px',
         }}>

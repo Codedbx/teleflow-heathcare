@@ -61,21 +61,23 @@ export default function Login() {
         <>
             <Head title="Sign In" />
 
-            <div style={{ display: 'flex', minHeight: '100vh' }}>
+            <div className="flex min-h-screen">
 
                 {/* ══════════════════════════════════════════════════════════════
-                    LEFT — Brand panel (40%)
+                    LEFT — Brand panel (40%) — hidden below md (768 px)
                 ══════════════════════════════════════════════════════════════ */}
-                <div style={{
-                    width: '40%',
-                    minWidth: 340,
-                    backgroundColor: '#0F1A2E',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    padding: '40px 44px',
-                    position: 'relative',
-                    overflow: 'hidden',
-                }}>
+                <div
+                    className="hidden md:flex"
+                    style={{
+                        width: '40%',
+                        minWidth: 340,
+                        backgroundColor: '#0F1A2E',
+                        flexDirection: 'column',
+                        padding: '40px 44px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                    }}
+                >
                     {/* Logo */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{
@@ -185,15 +187,28 @@ export default function Login() {
                 {/* ══════════════════════════════════════════════════════════════
                     RIGHT — Form panel (60%)
                 ══════════════════════════════════════════════════════════════ */}
-                <div style={{
-                    flex: 1,
-                    backgroundColor: '#F7F8FA',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '48px 40px',
-                }}>
+                <div
+                    className="flex-1 flex items-center justify-center px-5 py-10 sm:px-10 sm:py-12"
+                    style={{ backgroundColor: '#F7F8FA' }}
+                >
                     <div style={{ width: '100%', maxWidth: 400 }}>
+
+                        {/* Mobile-only logo — hidden at md+ where the brand panel shows */}
+                        <div className="flex md:hidden" style={{ alignItems: 'center', gap: 10, marginBottom: 28 }}>
+                            <div style={{
+                                width: 32, height: 32, borderRadius: 8,
+                                backgroundColor: '#0AB5A0',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                                <Zap size={15} color="#fff" strokeWidth={2.5} />
+                            </div>
+                            <span style={{
+                                fontFamily: 'Sora, sans-serif', fontSize: 16, fontWeight: 600,
+                                color: '#111827', letterSpacing: '-0.02em',
+                            }}>
+                                TeleFlow
+                            </span>
+                        </div>
 
                         {/* Heading */}
                         <h1 style={{

@@ -1,8 +1,10 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { ChevronRight, Save, X } from 'lucide-react';
 
 export default function PatientEdit({ patient, providers }) {
+    const isMobile = useIsMobile();
     const { data, setData, processing, errors, put } = useForm({
         first_name:           patient.first_name ?? '',
         last_name:            patient.last_name  ?? '',
@@ -39,8 +41,10 @@ export default function PatientEdit({ patient, providers }) {
         <AppLayout>
             <Head title={`Edit — ${patient.first_name} ${patient.last_name}`} />
 
+            <div style={{ padding: isMobile ? '16px 16px 40px' : '32px 32px 48px' }}>
+
             {/* Breadcrumb */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 24, fontSize: 13, color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 24, fontSize: 13, color: 'var(--text-muted)', flexWrap: 'wrap' }}>
                 <Link href="/patients" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Patients</Link>
                 <ChevronRight size={13} />
                 <Link href={`/patients/${patient.id}`} style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>
@@ -63,7 +67,7 @@ export default function PatientEdit({ patient, providers }) {
                     }}>
 
                         {/* Name row */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
                             <div>
                                 <label style={labelStyle}>First Name</label>
                                 <input style={inputStyle} value={data.first_name} onChange={e => setData('first_name', e.target.value)} />
@@ -77,7 +81,7 @@ export default function PatientEdit({ patient, providers }) {
                         </div>
 
                         {/* Contact */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
                             <div>
                                 <label style={labelStyle}>Phone</label>
                                 <input style={inputStyle} type="tel" value={data.phone} onChange={e => setData('phone', e.target.value)} />
@@ -125,15 +129,16 @@ export default function PatientEdit({ patient, providers }) {
                         </div>
 
                         {/* Actions */}
-                        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+                        <div style={{ display: 'flex', gap: 10, justifyContent: isMobile ? 'stretch' : 'flex-end', flexDirection: isMobile ? 'column-reverse' : 'row', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
                             <Link
                                 href={`/patients/${patient.id}`}
                                 style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                                     height: 40, padding: '0 20px',
                                     border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
                                     background: 'var(--bg-surface)', color: 'var(--text-primary)',
                                     fontSize: 14, fontWeight: 500, textDecoration: 'none',
+                                    width: isMobile ? '100%' : 'auto',
                                 }}
                             >
                                 <X size={14} /> Cancel
@@ -142,12 +147,13 @@ export default function PatientEdit({ patient, providers }) {
                                 type="submit"
                                 disabled={processing}
                                 style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                                     height: 40, padding: '0 20px',
                                     border: 'none', borderRadius: 'var(--radius-sm)',
                                     background: 'var(--accent-teal)', color: '#fff',
                                     fontSize: 14, fontWeight: 600, cursor: processing ? 'not-allowed' : 'pointer',
                                     opacity: processing ? 0.7 : 1,
+                                    width: isMobile ? '100%' : 'auto',
                                 }}
                             >
                                 <Save size={14} />
@@ -156,6 +162,7 @@ export default function PatientEdit({ patient, providers }) {
                         </div>
                     </div>
                 </form>
+            </div>
             </div>
         </AppLayout>
     );

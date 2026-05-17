@@ -77,7 +77,7 @@ export default function Step2Insurance({ data, onChange, errors }) {
       {/* Insurance Type Selector */}
       <div>
         <label className="block text-sm font-medium text-[#374151] mb-2">Coverage Type</label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {INSURANCE_TYPES.map((opt) => (
             <button
               key={opt.value}
@@ -111,7 +111,7 @@ export default function Step2Insurance({ data, onChange, errors }) {
             <ShieldCheck size={15} className="text-[#0AB5A0]" />
             <span className="text-sm font-semibold text-[#0AB5A0]">Medi-Cal Details</span>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Medi-Cal ID" error={errors?.medi_cal_id} required={type === 'medi_cal'}>
               <input
                 type="text"
@@ -158,7 +158,7 @@ export default function Step2Insurance({ data, onChange, errors }) {
             </select>
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Member ID" error={errors?.member_id} required>
               <input
                 type="text"
@@ -179,7 +179,7 @@ export default function Step2Insurance({ data, onChange, errors }) {
             </Field>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Subscriber Name" error={errors?.subscriber_name}>
               <input
                 type="text"
@@ -250,7 +250,7 @@ export default function Step2Insurance({ data, onChange, errors }) {
           </label>
 
           {data.prior_auth_required && (
-            <div className="grid grid-cols-2 gap-4 pl-7">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-7">
               <Field label="Prior Auth Number" error={errors?.prior_auth_number} required>
                 <input
                   type="text"

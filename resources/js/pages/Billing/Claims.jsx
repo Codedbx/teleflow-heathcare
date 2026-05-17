@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
     Receipt, Filter, RefreshCw, ChevronLeft, ChevronRight,
     CheckCircle, AlertTriangle, XCircle, HelpCircle, Search,
@@ -65,6 +66,7 @@ export default function Claims({ claims, patients = [], providers = [], filters 
     const [localFilters, setF]      = useState(filters);
     const [batchLoading, setBatch]  = useState(false);
     const [detailClaim, setDetail]  = useState(null);
+    const isMobile = useIsMobile();
 
     const setFilter = (key, val) => setF(prev => ({ ...prev, [key]: val }));
 
@@ -200,7 +202,7 @@ export default function Claims({ claims, patients = [], providers = [], filters 
 
     return (
         <AppLayout title="Claims">
-            <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 0 48px' }}>
+            <div style={{ padding: isMobile ? '16px 16px 48px' : '32px 32px 48px' }}>
 
                 {/* Page header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
@@ -241,129 +243,208 @@ export default function Claims({ claims, patients = [], providers = [], filters 
                 </div>
 
                 {/* Filter bar */}
-                <div style={{
-                    ...filterCard,
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-                    gap: '10px',
-                    marginBottom: '16px',
-                }}>
-                    <FormField label="Date From">
-                        <input
-                            type="date"
-                            value={localFilters.date_from || ''}
-                            onChange={e => setFilter('date_from', e.target.value)}
-                            style={miniInput}
+                <div style={{ ...filterCard, marginBottom: '16px' }}>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fill, minmax(160px, 1fr))',
+                        gap: '10px',
+                    }}>
+                        <FormField label="Date From">
+                            <input
+                                type="date"
+                                value={localFilters.date_from || ''}
+                                onChange={e => setFilter('date_from', e.target.value)}
+                                style={miniInput}
+                            />
+                        </FormField>
+                        <FormField label="Date To">
+                            <input
+                                type="date"
+                                value={localFilters.date_to || ''}
+                                onChange={e => setFilter('date_to', e.target.value)}
+                                style={miniInput}
+                            />
+                        </FormField>
+                        <Select
+                            label="Patient"
+                            placeholder="All patients"
+                            options={patientOptions}
+                            value={String(localFilters.patient_id || '')}
+                            onChange={v => setFilter('patient_id', v)}
                         />
-                    </FormField>
-                    <FormField label="Date To">
-                        <input
-                            type="date"
-                            value={localFilters.date_to || ''}
-                            onChange={e => setFilter('date_to', e.target.value)}
-                            style={miniInput}
+                        <Select
+                            label="Payer"
+                            placeholder="All payers"
+                            options={[
+                                { value: 'medi_cal',   label: 'Medi-Cal' },
+                                { value: 'commercial', label: 'Commercial' },
+                                { value: 'both',       label: 'Dual-Payer' },
+                                { value: 'self_pay',   label: 'Self-Pay' },
+                            ]}
+                            value={localFilters.payer || ''}
+                            onChange={v => setFilter('payer', v)}
                         />
-                    </FormField>
-                    <Select
-                        label="Patient"
-                        placeholder="All patients"
-                        options={patientOptions}
-                        value={String(localFilters.patient_id || '')}
-                        onChange={v => setFilter('patient_id', v)}
-                    />
-                    <Select
-                        label="Payer"
-                        placeholder="All payers"
-                        options={[
-                            { value: 'medi_cal',   label: 'Medi-Cal' },
-                            { value: 'commercial', label: 'Commercial' },
-                            { value: 'both',       label: 'Dual-Payer' },
-                            { value: 'self_pay',   label: 'Self-Pay' },
-                        ]}
-                        value={localFilters.payer || ''}
-                        onChange={v => setFilter('payer', v)}
-                    />
-                    <Select
-                        label="Validation"
-                        placeholder="Any"
-                        options={[
-                            { value: 'clean',       label: 'Clean' },
-                            { value: 'warning',     label: 'Warning' },
-                            { value: 'error',       label: 'Error' },
-                            { value: 'not_checked', label: 'Not Checked' },
-                        ]}
-                        value={localFilters.validation_status || ''}
-                        onChange={v => setFilter('validation_status', v)}
-                    />
-                    <Select
-                        label="Status"
-                        placeholder="Any"
-                        options={[
-                            { value: 'draft',     label: 'Draft' },
-                            { value: 'validated', label: 'Validated' },
-                            { value: 'submitted', label: 'Submitted' },
-                            { value: 'paid',      label: 'Paid' },
-                            { value: 'denied',    label: 'Denied' },
-                            { value: 'appealing', label: 'Appealing' },
-                        ]}
-                        value={localFilters.status || ''}
-                        onChange={v => setFilter('status', v)}
-                    />
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px' }}>
-                        <button onClick={applyFilters} style={primarySmallBtn}>
-                            <Filter size={13} /> Filter
+                        <Select
+                            label="Validation"
+                            placeholder="Any"
+                            options={[
+                                { value: 'clean',       label: 'Clean' },
+                                { value: 'warning',     label: 'Warning' },
+                                { value: 'error',       label: 'Error' },
+                                { value: 'not_checked', label: 'Not Checked' },
+                            ]}
+                            value={localFilters.validation_status || ''}
+                            onChange={v => setFilter('validation_status', v)}
+                        />
+                        <Select
+                            label="Status"
+                            placeholder="Any"
+                            options={[
+                                { value: 'draft',     label: 'Draft' },
+                                { value: 'validated', label: 'Validated' },
+                                { value: 'submitted', label: 'Submitted' },
+                                { value: 'paid',      label: 'Paid' },
+                                { value: 'denied',    label: 'Denied' },
+                                { value: 'appealing', label: 'Appealing' },
+                            ]}
+                            value={localFilters.status || ''}
+                            onChange={v => setFilter('status', v)}
+                        />
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                        <button onClick={applyFilters} style={{ ...primarySmallBtn, flex: isMobile ? 1 : 'none' }}>
+                            <Filter size={13} /> Apply Filters
                         </button>
-                        <button onClick={clearFilters} style={ghostBtn}>Clear</button>
+                        <button onClick={clearFilters} style={{ ...ghostBtn, flex: isMobile ? 1 : 'none' }}>Clear</button>
                     </div>
                 </div>
 
-                {/* Table */}
-                <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
-                    <Table
-                        columns={COLUMNS}
-                        rows={pagerData?.data ?? []}
-                        renderCell={renderCell}
-                        selectable
-                        selected={selected}
-                        onSelect={handleSelect}
-                        emptyState={
-                            <div style={{ padding: '40px 0', color: 'var(--text-muted)', fontFamily: 'DM Sans, sans-serif' }}>
+                {/* Table — desktop | Cards — mobile */}
+                {isMobile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {(pagerData?.data ?? []).length === 0 ? (
+                            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '40px 24px', textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'DM Sans, sans-serif', fontSize: 14 }}>
                                 No claims found. Adjust your filters or add a new claim.
                             </div>
-                        }
-                    />
-
-                    {/* Pagination */}
-                    {pagerData && pagerData.last_page > 1 && (
-                        <div style={{
-                            padding: '14px 20px',
-                            borderTop: '1px solid var(--border)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        }}>
-                            <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontFamily: 'DM Sans, sans-serif' }}>
-                                Showing {pagerData.from}–{pagerData.to} of {pagerData.total} claims
-                            </span>
-                            <div style={{ display: 'flex', gap: '6px' }}>
-                                {pagerData.prev_page_url && (
-                                    <button
-                                        onClick={() => router.visit(pagerData.prev_page_url, { preserveState: true })}
-                                        style={pagerBtn}
-                                    >
-                                        <ChevronLeft size={15} /> Prev
-                                    </button>
-                                )}
-                                {pagerData.next_page_url && (
-                                    <button
-                                        onClick={() => router.visit(pagerData.next_page_url, { preserveState: true })}
-                                        style={pagerBtn}
-                                    >
-                                        Next <ChevronRight size={15} />
-                                    </button>
-                                )}
+                        ) : (pagerData?.data ?? []).map(row => {
+                            const vBadge = VALIDATION_BADGES[row.validation_status];
+                            const sBadge = CLAIM_STATUS_BADGES[row.claim_status];
+                            const payerLabels = { medi_cal: 'Medi-Cal', commercial: 'Commercial', both: 'Dual-Payer', self_pay: 'Self-Pay' };
+                            return (
+                                <div key={row.id} style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-card)', padding: '14px 16px' }}>
+                                    {/* Header: patient + amount */}
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+                                        <div>
+                                            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+                                                {row.patient?.first_name} {row.patient?.last_name}
+                                            </div>
+                                            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                                                {row.service_date ? new Date(row.service_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                                            </div>
+                                        </div>
+                                        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+                                            {row.amount != null ? `$${parseFloat(row.amount).toFixed(2)}` : '—'}
+                                        </div>
+                                    </div>
+                                    {/* Meta row: CPT, Payer */}
+                                    <div style={{ display: 'flex', gap: 16, marginBottom: 10 }}>
+                                        <div>
+                                            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 }}>CPT</div>
+                                            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{row.cpt_code || '—'}</div>
+                                        </div>
+                                        {row.modifier && (
+                                            <div>
+                                                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 }}>Mod</div>
+                                                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: 'var(--text-secondary)' }}>{row.modifier}</div>
+                                            </div>
+                                        )}
+                                        <div>
+                                            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 }}>Payer</div>
+                                            <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{payerLabels[row.primary_payer] || row.primary_payer || '—'}</div>
+                                        </div>
+                                    </div>
+                                    {/* Badges + actions */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+                                        <Badge config={vBadge} />
+                                        <Badge config={sBadge} />
+                                        <div style={{ flex: 1 }} />
+                                        <ActionBtn label="View" onClick={() => setDetail(row)} />
+                                        <ActionBtn label="Validate" onClick={() => router.visit(`/billing/validator?claim_id=${row.id}`)} primary />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        {/* Mobile pagination */}
+                        {pagerData && pagerData.last_page > 1 && (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 4px' }}>
+                                <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'DM Sans, sans-serif' }}>
+                                    {pagerData.from}–{pagerData.to} of {pagerData.total}
+                                </span>
+                                <div style={{ display: 'flex', gap: 6 }}>
+                                    {pagerData.prev_page_url && (
+                                        <button onClick={() => router.visit(pagerData.prev_page_url, { preserveState: true })} style={pagerBtn}>
+                                            <ChevronLeft size={15} /> Prev
+                                        </button>
+                                    )}
+                                    {pagerData.next_page_url && (
+                                        <button onClick={() => router.visit(pagerData.next_page_url, { preserveState: true })} style={pagerBtn}>
+                                            Next <ChevronRight size={15} />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
+                        )}
+                    </div>
+                ) : (
+                    <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)', overflowX: 'auto' }}>
+                        <div style={{ minWidth: 920 }}>
+                            <Table
+                                columns={COLUMNS}
+                                rows={pagerData?.data ?? []}
+                                renderCell={renderCell}
+                                selectable
+                                selected={selected}
+                                onSelect={handleSelect}
+                                emptyState={
+                                    <div style={{ padding: '40px 0', color: 'var(--text-muted)', fontFamily: 'DM Sans, sans-serif' }}>
+                                        No claims found. Adjust your filters or add a new claim.
+                                    </div>
+                                }
+                            />
                         </div>
-                    )}
-                </div>
+                        {/* Pagination */}
+                        {pagerData && pagerData.last_page > 1 && (
+                            <div style={{
+                                padding: '14px 20px',
+                                borderTop: '1px solid var(--border)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                flexWrap: 'wrap', gap: 8,
+                            }}>
+                                <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontFamily: 'DM Sans, sans-serif' }}>
+                                    Showing {pagerData.from}–{pagerData.to} of {pagerData.total} claims
+                                </span>
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                    {pagerData.prev_page_url && (
+                                        <button
+                                            onClick={() => router.visit(pagerData.prev_page_url, { preserveState: true })}
+                                            style={pagerBtn}
+                                        >
+                                            <ChevronLeft size={15} /> Prev
+                                        </button>
+                                    )}
+                                    {pagerData.next_page_url && (
+                                        <button
+                                            onClick={() => router.visit(pagerData.next_page_url, { preserveState: true })}
+                                            style={pagerBtn}
+                                        >
+                                            Next <ChevronRight size={15} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Claim detail modal */}

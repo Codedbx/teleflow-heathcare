@@ -6,6 +6,7 @@ import {
     Calendar, Clock, User, Sparkles, Copy, Check,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -39,6 +40,7 @@ function MetaItem({ icon: Icon, label, value }) {
 
 export default function NoteShow({ note }) {
     const [copied, setCopied] = useState(false);
+    const isMobile = useIsMobile();
 
     const soap = {
         subjective: note.soap_subjective,
@@ -74,8 +76,10 @@ ${note.soap_plan}`;
         <AppLayout>
             <Head title={`Note — ${note.patient?.first_name} ${note.patient?.last_name}`} />
 
+            <div style={{ padding: isMobile ? '16px 16px 32px' : '32px 32px 48px' }}>
+
             {/* Breadcrumb */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, fontSize: 13, color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, fontSize: 13, color: 'var(--text-muted)', flexWrap: 'wrap' }}>
                 <Link href="/notes" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Clinical Notes</Link>
                 <ChevronRight size={13} />
                 <Link href={`/patients/${note.patient_id}`} style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>
@@ -162,6 +166,8 @@ ${note.soap_plan}`;
                     Tokens used: {note.ai_prompt_tokens} prompt + {note.ai_completion_tokens} completion
                 </p>
             )}
+
+            </div>
         </AppLayout>
     );
 }

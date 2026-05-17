@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
     Search, Filter, UserPlus, MoreHorizontal, ChevronLeft, ChevronRight,
     Eye, FileText, ShieldCheck, Edit2, Users, CheckCircle, Clock, UserX,
@@ -324,6 +325,7 @@ function IntakeLinkButton() {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function PatientsIndex({ patients, filters, stats }) {
+    const isMobile = useIsMobile();
     const [search, setSearch] = useState(filters?.search ?? '');
     const [status, setStatus] = useState(filters?.status ?? '');
     const [selectedIds, setSelectedIds] = useState([]);
@@ -369,9 +371,10 @@ export default function PatientsIndex({ patients, filters, stats }) {
         { value: 'pending_intake', label: 'Pending Intake' },
     ];
 
-    const SortableHeader = ({ col, label }) => (
+    const SortableHeader = ({ col, label, cls = '' }) => (
         <th
             onClick={() => handleSort(col)}
+            className={cls}
             style={{
                 padding: '12px 16px', textAlign: 'left',
                 fontFamily: 'DM Sans, sans-serif', fontSize: 12,
@@ -391,13 +394,13 @@ export default function PatientsIndex({ patients, filters, stats }) {
         <AppLayout>
             <Head title="Patients" />
 
-            <div style={{ padding: '32px 32px 48px', maxWidth: 1280, margin: '0 auto' }}>
+            <div className="p-4 sm:p-6 lg:p-8 max-w-[1280px] mx-auto">
 
                 {/* ── Page Header ── */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 20 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <h1 style={{
-                            fontFamily: 'Sora, sans-serif', fontSize: 24, fontWeight: 700,
+                            fontFamily: 'Sora, sans-serif', fontSize: 22, fontWeight: 700,
                             color: '#111827', margin: 0,
                         }}>
                             Patients
@@ -414,7 +417,7 @@ export default function PatientsIndex({ patients, filters, stats }) {
                         )}
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                         {/* Search */}
                         <div style={{ position: 'relative' }}>
                             <Search size={16} style={{
@@ -427,7 +430,7 @@ export default function PatientsIndex({ patients, filters, stats }) {
                                 value={search}
                                 onChange={e => handleSearch(e.target.value)}
                                 style={{
-                                    height: 40, width: 300, paddingLeft: 38, paddingRight: 14,
+                                    height: 40, width: 200, paddingLeft: 38, paddingRight: 14,
                                     border: '1px solid #E5E7EB', borderRadius: 8,
                                     fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: '#111827',
                                     background: '#fff', outline: 'none',
@@ -461,8 +464,7 @@ export default function PatientsIndex({ patients, filters, stats }) {
                             </select>
                         </div>
 
-                        
-                         <IntakeLinkButton />
+                        <IntakeLinkButton />
 
                         {/* Add Patient */}
                         <Link
@@ -488,10 +490,7 @@ export default function PatientsIndex({ patients, filters, stats }) {
 
                 {/* ── Stats Strip ── */}
                 {stats && (
-                    <div style={{
-                        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
-                        gap: 16, marginBottom: 24,
-                    }}>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
                         {[
                             { label: 'Total Patients',    value: stats.total,         icon: Users,       color: '#0AB5A0', bg: '#E6F9F7' },
                             { label: 'Active',            value: stats.active,         icon: CheckCircle, color: '#10B981', bg: '#DCFCE7' },
@@ -520,196 +519,188 @@ export default function PatientsIndex({ patients, filters, stats }) {
                     </div>
                 )}
 
-                {/* ── Table Card ── */}
-                <div style={{
-                    background: '#fff', borderRadius: 12,
-                    border: '1px solid #E5E7EB',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                    overflow: 'hidden',
-                }}>
+                {/* ── Patient List: cards on mobile, table on tablet+ ── */}
+                {isMobile ? (
+                    /* ─── Mobile Card List ─── */
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {patientList.length === 0 ? (
+                            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', padding: '48px 24px', textAlign: 'center' }}>
+                                <Users size={28} color="#D1D5DB" style={{ margin: '0 auto 12px' }} />
+                                <p style={{ fontFamily: 'Sora, sans-serif', fontWeight: 600, fontSize: 14, color: '#374151', marginBottom: 4 }}>
+                                    {!!search || !!status ? 'No patients match your search' : 'No patients yet'}
+                                </p>
+                                <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#9CA3AF' }}>
+                                    {!!search || !!status ? 'Try adjusting your filters.' : 'Add your first patient to get started.'}
+                                </p>
+                            </div>
+                        ) : patientList.map(patient => (
+                            <div key={patient.id} style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                                {/* Top row: avatar + name + status */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <PatientAvatar name={`${patient.first_name} ${patient.last_name}`} size={38} />
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {patient.first_name} {patient.last_name}
+                                        </div>
+                                        <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#9CA3AF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {patient.email}
+                                        </div>
+                                    </div>
+                                    <StatusBadge status={patient.status} />
+                                </div>
+                                {/* Detail row */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, paddingTop: 10, borderTop: '1px solid #F3F4F6', flexWrap: 'wrap' }}>
+                                    <div style={{ flex: 1, minWidth: 0, fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#6B7280' }}>
+                                        Last visit: <span style={{ color: '#374151' }}>{formatDate(patient.last_visit)}</span>
+                                    </div>
+                                    <InsuranceBadge insurance={patient.insurance} />
+                                </div>
+                                {/* Actions row */}
+                                <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+                                    <Link href={`/patients/${patient.id}`} style={{ height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#0AB5A0', color: '#fff', borderRadius: 6, fontFamily: 'DM Sans, sans-serif', fontSize: 12, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                                        <Eye size={12} /> View
+                                    </Link>
+                                    <Link href={`/patients/${patient.id}/edit`} style={{ height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#F3F4F6', color: '#374151', borderRadius: 6, fontFamily: 'DM Sans, sans-serif', fontSize: 12, fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                                        <Edit2 size={12} /> Edit
+                                    </Link>
+                                    <Link href={`/notes/assistant?patient=${patient.id}`} style={{ height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#F3F4F6', color: '#374151', borderRadius: 6, fontFamily: 'DM Sans, sans-serif', fontSize: 12, fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                                        <FileText size={12} /> Note
+                                    </Link>
+                                    <Link href={`/billing/validator?patient=${patient.id}`} style={{ height: 30, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5, background: '#F3F4F6', color: '#374151', borderRadius: 6, fontFamily: 'DM Sans, sans-serif', fontSize: 12, fontWeight: 500, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                                        <ShieldCheck size={12} /> Billing
+                                    </Link>
+                                </div>
+                            </div>
+                        ))}
 
-                    {/* Bulk action bar */}
-                    {selectedIds.length > 0 && (
-                        <div style={{
-                            padding: '10px 20px', background: '#E6F9F7',
-                            borderBottom: '1px solid #B2EDE8',
-                            display: 'flex', alignItems: 'center', gap: 12,
-                        }}>
-                            <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: '#0AB5A0' }}>
-                                {selectedIds.length} selected
-                            </span>
-                            <button style={ghostBtn}>Run Billing Validation</button>
-                            <button style={ghostBtn}>Export</button>
-                            <button onClick={() => setSelectedIds([])} style={{ ...ghostBtn, marginLeft: 'auto', color: '#6B7280' }}>
-                                Clear selection
-                            </button>
-                        </div>
-                    )}
+                        {/* Mobile pagination */}
+                        {meta.last_page > 1 && (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 4px' }}>
+                                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#6B7280' }}>
+                                    {meta.from}–{meta.to} of {meta.total}
+                                </span>
+                                <div style={{ display: 'flex', gap: 6 }}>
+                                    <Link href={links.prev ?? '#'} style={{ ...pagBtn, opacity: links.prev ? 1 : 0.4, pointerEvents: links.prev ? 'auto' : 'none' }}>
+                                        <ChevronLeft size={16} />
+                                    </Link>
+                                    <Link href={links.next ?? '#'} style={{ ...pagBtn, opacity: links.next ? 1 : 0.4, pointerEvents: links.next ? 'auto' : 'none' }}>
+                                        <ChevronRight size={16} />
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    /* ─── Tablet/Desktop Table ─── */
+                    <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
 
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ borderBottom: '1px solid #E5E7EB', background: '#F9FAFB' }}>
-                                    <th style={{ padding: '12px 16px', width: 44 }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={allChecked}
-                                            onChange={toggleAll}
-                                            style={{ accentColor: '#0AB5A0', width: 16, height: 16, cursor: 'pointer' }}
-                                        />
-                                    </th>
-                                    <SortableHeader col="last_name" label="Patient" />
-                                    <th style={plainTh}>DOB / Age</th>
-                                    <th style={plainTh}>Insurance</th>
-                                    <SortableHeader col="provider" label="Provider" />
-                                    <SortableHeader col="status" label="Status" />
-                                    <SortableHeader col="last_visit" label="Last Visit" />
-                                    <th style={{ ...plainTh, width: 48 }} />
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {patientList.length === 0 ? (
-                                    <EmptyState hasSearch={!!search || !!status} />
-                                ) : patientList.map((patient, i) => (
-                                    <tr
-                                        key={patient.id}
-                                        style={{
-                                            borderBottom: i < patientList.length - 1 ? '1px solid #F3F4F6' : 'none',
-                                            background: selectedIds.includes(patient.id) ? '#F0FDFB' : '#fff',
-                                            transition: 'background 0.1s',
-                                        }}
-                                        onMouseEnter={e => { if (!selectedIds.includes(patient.id)) e.currentTarget.style.background = '#F9FAFB'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.background = selectedIds.includes(patient.id) ? '#F0FDFB' : '#fff'; }}
-                                    >
-                                        {/* Checkbox */}
-                                        <td style={{ padding: '0 16px', height: 52 }}>
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedIds.includes(patient.id)}
-                                                onChange={() => toggleOne(patient.id)}
-                                                style={{ accentColor: '#0AB5A0', width: 16, height: 16, cursor: 'pointer' }}
-                                            />
-                                        </td>
+                        {/* Bulk action bar */}
+                        {selectedIds.length > 0 && (
+                            <div style={{ padding: '10px 20px', background: '#E6F9F7', borderBottom: '1px solid #B2EDE8', display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: '#0AB5A0' }}>
+                                    {selectedIds.length} selected
+                                </span>
+                                <button style={ghostBtn}>Run Billing Validation</button>
+                                <button style={ghostBtn}>Export</button>
+                                <button onClick={() => setSelectedIds([])} style={{ ...ghostBtn, marginLeft: 'auto', color: '#6B7280' }}>
+                                    Clear selection
+                                </button>
+                            </div>
+                        )}
 
-                                        {/* Avatar + Name */}
-                                        <td style={{ padding: '0 16px', height: 52 }}>
-                                            <Link href={`/patients/${patient.id}`} style={{ textDecoration: 'none' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                    <PatientAvatar name={`${patient.first_name} ${patient.last_name}`} size={34} />
-                                                    <div>
-                                                        <div style={{
-                                                            fontFamily: 'DM Sans, sans-serif', fontSize: 14,
-                                                            fontWeight: 600, color: '#111827',
-                                                        }}>
-                                                            {patient.first_name} {patient.last_name}
-                                                        </div>
-                                                        <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#9CA3AF' }}>
-                                                            {patient.email}
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid #E5E7EB', background: '#F9FAFB' }}>
+                                        <th style={{ padding: '12px 16px', width: 44 }}>
+                                            <input type="checkbox" checked={allChecked} onChange={toggleAll} style={{ accentColor: '#0AB5A0', width: 16, height: 16, cursor: 'pointer' }} />
+                                        </th>
+                                        <SortableHeader col="last_name" label="Patient" />
+                                        <th style={plainTh} className="hidden md:table-cell">DOB / Age</th>
+                                        <th style={plainTh} className="hidden lg:table-cell">Insurance</th>
+                                        <SortableHeader col="provider" label="Provider" cls="hidden lg:table-cell" />
+                                        <SortableHeader col="status" label="Status" />
+                                        <SortableHeader col="last_visit" label="Last Visit" cls="hidden md:table-cell" />
+                                        <th style={{ ...plainTh, width: 48 }} />
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {patientList.length === 0 ? (
+                                        <EmptyState hasSearch={!!search || !!status} />
+                                    ) : patientList.map((patient, i) => (
+                                        <tr
+                                            key={patient.id}
+                                            style={{ borderBottom: i < patientList.length - 1 ? '1px solid #F3F4F6' : 'none', background: selectedIds.includes(patient.id) ? '#F0FDFB' : '#fff', transition: 'background 0.1s' }}
+                                            onMouseEnter={e => { if (!selectedIds.includes(patient.id)) e.currentTarget.style.background = '#F9FAFB'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = selectedIds.includes(patient.id) ? '#F0FDFB' : '#fff'; }}
+                                        >
+                                            <td style={{ padding: '0 16px', height: 52 }}>
+                                                <input type="checkbox" checked={selectedIds.includes(patient.id)} onChange={() => toggleOne(patient.id)} style={{ accentColor: '#0AB5A0', width: 16, height: 16, cursor: 'pointer' }} />
+                                            </td>
+                                            <td style={{ padding: '0 16px', height: 52 }}>
+                                                <Link href={`/patients/${patient.id}`} style={{ textDecoration: 'none' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                        <PatientAvatar name={`${patient.first_name} ${patient.last_name}`} size={34} />
+                                                        <div>
+                                                            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, color: '#111827' }}>{patient.first_name} {patient.last_name}</div>
+                                                            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#9CA3AF' }}>{patient.email}</div>
                                                         </div>
                                                     </div>
+                                                </Link>
+                                            </td>
+                                            <td className="hidden md:table-cell" style={{ padding: '0 16px', height: 52 }}>
+                                                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#374151' }}>{formatDob(patient.dob)}</div>
+                                                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#9CA3AF' }}>{getAge(patient.dob)} yrs</div>
+                                            </td>
+                                            <td className="hidden lg:table-cell" style={{ padding: '0 16px', height: 52 }}>
+                                                <InsuranceBadge insurance={patient.insurance} />
+                                            </td>
+                                            <td className="hidden lg:table-cell" style={{ padding: '0 16px', height: 52 }}>
+                                                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#374151' }}>
+                                                    {patient.provider?.name ?? <span style={{ color: '#9CA3AF' }}>Unassigned</span>}
                                                 </div>
-                                            </Link>
-                                        </td>
-
-                                        {/* DOB / Age */}
-                                        <td style={{ padding: '0 16px', height: 52 }}>
-                                            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#374151' }}>
-                                                {formatDob(patient.dob)}
-                                            </div>
-                                            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#9CA3AF' }}>
-                                                {getAge(patient.dob)} yrs
-                                            </div>
-                                        </td>
-
-                                        {/* Insurance */}
-                                        <td style={{ padding: '0 16px', height: 52 }}>
-                                            <InsuranceBadge insurance={patient.insurance} />
-                                        </td>
-
-                                        {/* Provider */}
-                                        <td style={{ padding: '0 16px', height: 52 }}>
-                                            <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#374151' }}>
-                                                {patient.provider?.name ?? <span style={{ color: '#9CA3AF' }}>Unassigned</span>}
-                                            </div>
-                                            {patient.provider?.provider_type && (
-                                                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: '#9CA3AF' }}>
-                                                    {patient.provider.provider_type}
-                                                </div>
-                                            )}
-                                        </td>
-
-                                        {/* Status */}
-                                        <td style={{ padding: '0 16px', height: 52 }}>
-                                            <StatusBadge status={patient.status} />
-                                        </td>
-
-                                        {/* Last Visit */}
-                                        <td style={{ padding: '0 16px', height: 52 }}>
-                                            <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#374151' }}>
-                                                {formatDate(patient.last_visit)}
-                                            </span>
-                                        </td>
-
-                                        {/* Actions */}
-                                        <td style={{ padding: '0 12px', height: 52, textAlign: 'right' }}>
-                                            <ThreeDotsMenu patient={patient} />
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* ── Pagination ── */}
-                    {meta.last_page > 1 && (
-                        <div style={{
-                            padding: '14px 20px',
-                            borderTop: '1px solid #E5E7EB',
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            background: '#F9FAFB',
-                        }}>
-                            <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#6B7280' }}>
-                                Showing {meta.from}–{meta.to} of {meta.total} patients
-                            </span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <Link
-                                    href={links.prev ?? '#'}
-                                    style={{
-                                        ...pagBtn,
-                                        opacity: links.prev ? 1 : 0.4,
-                                        pointerEvents: links.prev ? 'auto' : 'none',
-                                    }}
-                                >
-                                    <ChevronLeft size={16} />
-                                </Link>
-                                {Array.from({ length: meta.last_page }, (_, i) => i + 1).map(page => (
-                                    <Link
-                                        key={page}
-                                        href={`/patients?page=${page}&search=${search}&status=${status}`}
-                                        style={{
-                                            ...pagBtn,
-                                            backgroundColor: page === meta.current_page ? '#0AB5A0' : 'transparent',
-                                            color: page === meta.current_page ? '#fff' : '#374151',
-                                            fontWeight: page === meta.current_page ? 600 : 400,
-                                        }}
-                                    >
-                                        {page}
-                                    </Link>
-                                ))}
-                                <Link
-                                    href={links.next ?? '#'}
-                                    style={{
-                                        ...pagBtn,
-                                        opacity: links.next ? 1 : 0.4,
-                                        pointerEvents: links.next ? 'auto' : 'none',
-                                    }}
-                                >
-                                    <ChevronRight size={16} />
-                                </Link>
-                            </div>
+                                                {patient.provider?.provider_type && (
+                                                    <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: '#9CA3AF' }}>{patient.provider.provider_type}</div>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: '0 16px', height: 52 }}>
+                                                <StatusBadge status={patient.status} />
+                                            </td>
+                                            <td className="hidden md:table-cell" style={{ padding: '0 16px', height: 52 }}>
+                                                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#374151' }}>{formatDate(patient.last_visit)}</span>
+                                            </td>
+                                            <td style={{ padding: '0 12px', height: 52, textAlign: 'right' }}>
+                                                <ThreeDotsMenu patient={patient} />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    )}
-                </div>
+
+                        {/* Pagination */}
+                        {meta.last_page > 1 && (
+                            <div style={{ padding: '14px 20px', borderTop: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F9FAFB' }}>
+                                <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#6B7280' }}>
+                                    Showing {meta.from}–{meta.to} of {meta.total} patients
+                                </span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <Link href={links.prev ?? '#'} style={{ ...pagBtn, opacity: links.prev ? 1 : 0.4, pointerEvents: links.prev ? 'auto' : 'none' }}>
+                                        <ChevronLeft size={16} />
+                                    </Link>
+                                    {Array.from({ length: meta.last_page }, (_, i) => i + 1).map(page => (
+                                        <Link key={page} href={`/patients?page=${page}&search=${search}&status=${status}`} style={{ ...pagBtn, backgroundColor: page === meta.current_page ? '#0AB5A0' : 'transparent', color: page === meta.current_page ? '#fff' : '#374151', fontWeight: page === meta.current_page ? 600 : 400 }}>
+                                            {page}
+                                        </Link>
+                                    ))}
+                                    <Link href={links.next ?? '#'} style={{ ...pagBtn, opacity: links.next ? 1 : 0.4, pointerEvents: links.next ? 'auto' : 'none' }}>
+                                        <ChevronRight size={16} />
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

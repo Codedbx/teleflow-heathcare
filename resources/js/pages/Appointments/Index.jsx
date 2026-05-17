@@ -1,10 +1,11 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
     ChevronLeft, ChevronRight, Plus, X, Video, Headphones, Building2,
     CalendarDays, Clock, User, Sparkles, ExternalLink, Check,
-    XCircle, AlertCircle, Search, Filter,
+    XCircle, AlertCircle, Search, Filter, SlidersHorizontal, CalendarOff,
 } from 'lucide-react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -352,9 +353,85 @@ function WeekGrid({ weekDays, appointments, providerColorMap, onSelectAppt, sele
     );
 }
 
+// ─── Day View (mobile) ────────────────────────────────────────────────────────
+
+function DayView({ selectedDate, appointments, providerColorMap, onSelectAppt, selectedApptId }) {
+    const dateKey = ymd(selectedDate);
+    const dayAppts = useMemo(() =>
+        appointments
+            .filter(a => a.scheduled_at.slice(0, 10) === dateKey)
+            .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at)),
+        [appointments, dateKey]
+    );
+
+    if (dayAppts.length === 0) {
+        return (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 32 }}>
+                <CalendarOff size={32} color="#D1D5DB" />
+                <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, color: '#9CA3AF', textAlign: 'center' }}>
+                    No appointments on {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px 24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {dayAppts.map(appt => {
+                    const color = providerColorMap[appt.provider_id] ?? PROVIDER_COLORS[0];
+                    const selected = appt.id === selectedApptId;
+                    const patientName = appt.patient ? `${appt.patient.first_name} ${appt.patient.last_name}` : 'Patient';
+                    return (
+                        <button
+                            key={appt.id}
+                            onClick={() => onSelectAppt(appt)}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: 12,
+                                padding: '12px 14px', borderRadius: 12,
+                                border: `2px solid ${selected ? color.dark : color.border}`,
+                                backgroundColor: selected ? color.border : color.bg,
+                                textAlign: 'left', cursor: 'pointer',
+                                boxShadow: selected ? `0 2px 8px ${color.border}40` : '0 1px 3px rgba(0,0,0,0.06)',
+                                transition: 'all 0.12s',
+                                width: '100%',
+                            }}
+                        >
+                            {/* Time */}
+                            <div style={{ flexShrink: 0, textAlign: 'center', minWidth: 48 }}>
+                                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, fontWeight: 700, color: selected ? '#fff' : color.text }}>
+                                    {formatTime(appt.scheduled_at)}
+                                </div>
+                                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 10, color: selected ? 'rgba(255,255,255,0.75)' : '#9CA3AF', marginTop: 2 }}>
+                                    {appt.duration_minutes}m
+                                </div>
+                            </div>
+                            {/* Divider */}
+                            <div style={{ width: 2, height: 36, borderRadius: 1, backgroundColor: selected ? 'rgba(255,255,255,0.4)' : color.border, flexShrink: 0 }} />
+                            {/* Patient info */}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 14, fontWeight: 600, color: selected ? '#fff' : '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {patientName}
+                                </div>
+                                <div style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: selected ? 'rgba(255,255,255,0.8)' : '#6B7280', marginTop: 2 }}>
+                                    {appt.provider?.name ?? '—'}
+                                </div>
+                            </div>
+                            {/* Modality icon */}
+                            <div style={{ color: selected ? '#fff' : color.text, flexShrink: 0 }}>
+                                <ModalityIcon modality={appt.modality} size={16} />
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 // ─── Appointment Slide-Over ───────────────────────────────────────────────────
 
-function AppointmentSlideOver({ appt, onClose, onStatusChange }) {
+function AppointmentSlideOver({ appt, onClose, onStatusChange, isMobile }) {
     const [updating, setUpdating] = useState(false);
 
     const changeStatus = (status) => {
@@ -378,7 +455,7 @@ function AppointmentSlideOver({ appt, onClose, onStatusChange }) {
 
     return (
         <div style={{
-            position: 'fixed', top: 0, right: 0, height: '100vh', width: 400,
+            position: 'fixed', top: 0, right: 0, height: '100vh', width: isMobile ? '100%' : 400,
             background: '#fff', borderLeft: '1px solid #E5E7EB',
             boxShadow: '-8px 0 32px rgba(0,0,0,0.10)', zIndex: 100,
             display: 'flex', flexDirection: 'column',
@@ -694,6 +771,8 @@ export default function AppointmentsIndex({ appointments = [], patients = [], pr
     const [selectedAppt, setSelectedAppt]     = useState(null);
     const [showNewModal, setShowNewModal]     = useState(false);
     const [selectedProvider, setSelectedProvider] = useState('');
+    const [showLeftPanel, setShowLeftPanel]   = useState(false);
+    const isMobile                            = useIsMobile();
 
     // Build provider → colour map (stable by provider id order)
     const providerColorMap = useMemo(() => {
@@ -714,23 +793,43 @@ export default function AppointmentsIndex({ appointments = [], patients = [], pr
 
     const goToPrevWeek = () => setWeekBase(d => addDays(d, -7));
     const goToNextWeek = () => setWeekBase(d => addDays(d, 7));
+    const goToPrevDay  = () => { const d = addDays(selectedDate, -1); setSelectedDate(d); setWeekBase(d); };
+    const goToNextDay  = () => { const d = addDays(selectedDate,  1); setSelectedDate(d); setWeekBase(d); };
     const goToToday    = () => { setWeekBase(new Date()); setSelectedDate(new Date()); };
 
     const handleSelectDate = (date) => {
         setSelectedDate(date);
         setWeekBase(date);
+        if (isMobile) setShowLeftPanel(false);
     };
 
     const weekLabel = `${formatDateShort(weekDays[0])} – ${formatDateShort(weekDays[6])}, ${weekDays[0].getFullYear()}`;
+    const dayLabel  = selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
     return (
         <AppLayout>
             <Head title="Appointments" />
 
-            <div style={{ display: 'flex', height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', height: isMobile ? 'calc(100vh - 56px)' : 'calc(100vh - 64px)', overflow: 'hidden' }}>
 
-                {/* ── Left Panel ── */}
-                <div style={{ width: 260, flexShrink: 0, borderRight: '1px solid #E5E7EB', background: '#fff', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                {/* ── Left Panel (desktop always visible; mobile: slide-over) ── */}
+                {isMobile && showLeftPanel && (
+                    <div
+                        onClick={() => setShowLeftPanel(false)}
+                        style={{ position: 'fixed', inset: 0, zIndex: 39, backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
+                    />
+                )}
+                <div style={{
+                    width: isMobile ? 280 : 260, flexShrink: 0,
+                    borderRight: '1px solid #E5E7EB', background: '#fff',
+                    display: 'flex', flexDirection: 'column', overflowY: 'auto',
+                    ...(isMobile ? {
+                        position: 'fixed', top: 56, bottom: 0, left: 0, zIndex: 40,
+                        transform: showLeftPanel ? 'translateX(0)' : 'translateX(-100%)',
+                        transition: 'transform 260ms cubic-bezier(0.4,0,0.2,1)',
+                        boxShadow: showLeftPanel ? '4px 0 24px rgba(0,0,0,0.15)' : 'none',
+                    } : {}),
+                }}>
 
                     {/* Mini Calendar */}
                     <MiniCalendar
@@ -780,14 +879,24 @@ export default function AppointmentsIndex({ appointments = [], patients = [], pr
                 {/* ── Right Panel ── */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#F7F8FA' }}>
 
-                    {/* Week nav bar */}
-                    <div style={{ padding: '14px 20px', background: '#fff', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <button onClick={goToPrevWeek} style={navBtn}><ChevronLeft size={15} /></button>
-                            <span style={{ fontFamily: 'Sora, sans-serif', fontSize: 14, fontWeight: 600, color: '#111827', minWidth: 200 }}>
-                                {weekLabel}
+                    {/* Nav bar — day nav on mobile, week nav on desktop */}
+                    <div style={{ padding: '10px 14px', background: '#fff', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {/* Calendar toggle — mobile only */}
+                            {isMobile && (
+                                <button
+                                    onClick={() => setShowLeftPanel(p => !p)}
+                                    style={{ ...navBtn, color: showLeftPanel ? '#0AB5A0' : '#6B7280', borderColor: showLeftPanel ? '#0AB5A0' : '#E5E7EB' }}
+                                    title="Toggle calendar"
+                                >
+                                    <SlidersHorizontal size={14} />
+                                </button>
+                            )}
+                            <button onClick={isMobile ? goToPrevDay : goToPrevWeek} style={navBtn}><ChevronLeft size={15} /></button>
+                            <span style={{ fontFamily: 'Sora, sans-serif', fontSize: isMobile ? 13 : 14, fontWeight: 600, color: '#111827', minWidth: isMobile ? 'unset' : 200 }}>
+                                {isMobile ? dayLabel : weekLabel}
                             </span>
-                            <button onClick={goToNextWeek} style={navBtn}><ChevronRight size={15} /></button>
+                            <button onClick={isMobile ? goToNextDay : goToNextWeek} style={navBtn}><ChevronRight size={15} /></button>
                             <button onClick={goToToday} style={{ height: 32, padding: '0 14px', border: '1px solid #E5E7EB', borderRadius: 8, background: '#fff', color: '#374151', fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
                                 Today
                             </button>
@@ -799,19 +908,29 @@ export default function AppointmentsIndex({ appointments = [], patients = [], pr
                             onMouseEnter={e => e.currentTarget.style.background = '#089888'}
                             onMouseLeave={e => e.currentTarget.style.background = '#0AB5A0'}
                         >
-                            <Plus size={16} /> New Appointment
+                            <Plus size={16} /> {isMobile ? 'New' : 'New Appointment'}
                         </button>
                     </div>
 
-                    {/* Week grid */}
-                    <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#fff', margin: '0' }}>
-                        <WeekGrid
-                            weekDays={weekDays}
-                            appointments={filtered}
-                            providerColorMap={providerColorMap}
-                            onSelectAppt={a => setSelectedAppt(prev => prev?.id === a.id ? null : a)}
-                            selectedApptId={selectedAppt?.id}
-                        />
+                    {/* Day view (mobile) / Week grid (desktop) */}
+                    <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#fff' }}>
+                        {isMobile ? (
+                            <DayView
+                                selectedDate={selectedDate}
+                                appointments={filtered}
+                                providerColorMap={providerColorMap}
+                                onSelectAppt={a => setSelectedAppt(prev => prev?.id === a.id ? null : a)}
+                                selectedApptId={selectedAppt?.id}
+                            />
+                        ) : (
+                            <WeekGrid
+                                weekDays={weekDays}
+                                appointments={filtered}
+                                providerColorMap={providerColorMap}
+                                onSelectAppt={a => setSelectedAppt(prev => prev?.id === a.id ? null : a)}
+                                selectedApptId={selectedAppt?.id}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
@@ -824,6 +943,7 @@ export default function AppointmentsIndex({ appointments = [], patients = [], pr
                         appt={selectedAppt}
                         onClose={() => setSelectedAppt(null)}
                         onStatusChange={() => router.reload({ only: ['appointments'] })}
+                        isMobile={isMobile}
                     />
                 </>
             )}
