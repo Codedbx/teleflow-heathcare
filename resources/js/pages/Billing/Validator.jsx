@@ -133,6 +133,12 @@ export default function Validator({ patients = [], providers = [], prefill = nul
                 body: JSON.stringify(form),
             });
 
+            if (!res.ok) {
+                const msg = res.status === 419 ? 'Session expired — please refresh the page.' : `Server error (${res.status}). Please try again.`;
+                toast.error(msg);
+                return;
+            }
+
             const data = await res.json();
             setResult(data);
 

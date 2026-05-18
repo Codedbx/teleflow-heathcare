@@ -11,6 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Railway (and most PaaS hosts) terminate SSL at the load balancer and
+        // forward requests as HTTP with X-Forwarded-Proto: https. Without this,
+        // Laravel treats every request as plain HTTP, breaking CSRF (419) and
+        // generating http:// redirect URLs (mixed-content errors).
+        $middleware->trustProxies(at: '*');
+
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
